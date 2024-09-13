@@ -11,9 +11,9 @@ namespace AnotherStockMarketService.Api.Controllers
     public class SplitsController(IBus bus) : ControllerBase
     {
         [HttpGet]
-        public async Task<IEnumerable<CorporateAction>> Get([FromQuery(Name = "code")] string? code, [FromQuery(Name = "startDate")] DateTime startDate, [FromQuery(Name = "endDate")] DateTime endDate, [FromServices] ISplitDataService splitDataService)
+        public async Task<IEnumerable<CorporateAction>> Get([FromQuery(Name = "code")] string? code, [FromQuery(Name = "startDate")] DateTime startDate, [FromQuery(Name = "endDate")] DateTime endDate, [FromServices] ISplitDataService splitDataService, [FromQuery(Name = "loadPositionDate")] bool loadPositionDate = false)
         {
-            var data = await splitDataService.GetSplitEventsBetweenDates(startDate, endDate,code);
+            var data = await splitDataService.GetSplitEventsBetweenDates(startDate, endDate, code, loadPositionDate);
 
             return data;
         }

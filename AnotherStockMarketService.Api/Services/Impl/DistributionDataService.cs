@@ -39,7 +39,7 @@ namespace AnotherStockMarketService.Api.Services.Impl
             return resultCollection.ToList();
         }
 
-        public async Task<List<Distribution>> GetCodeDistributionsBetweenDates(DateTime startDate, DateTime endDate, string? ticker)
+        public async Task<List<Distribution>> GetCodeDistributionsBetweenDates(DateTime startDate, DateTime endDate, string? ticker, bool loadPositionDate = false)
         {
             int degreeOfParallelism = 10;
 
@@ -47,11 +47,15 @@ namespace AnotherStockMarketService.Api.Services.Impl
 
             var data = await finantialApi.GetDividends(startDate, endDate, ticker);
 
-            await Parallel.ForEachAsync(data, new ParallelOptions { MaxDegreeOfParallelism = degreeOfParallelism }, async (dividendDTO, cancellationToken) =>
+            if (loadPositionDate)
             {
-                var result = await finantialApi.GetQuotations(code: dividendDTO.C, startDate: dividendDTO.ExD.AddDays(-10), endDate: dividendDTO.ExD.AddDays(-1));
-                dividendDTO.PosD = result.Count != 0 ? result.OrderByDescending(_ => _.D).First().D : null;
-            });
+
+                await Parallel.ForEachAsync(data, new ParallelOptions { MaxDegreeOfParallelism = degreeOfParallelism }, async (dividendDTO, cancellationToken) =>
+                {
+                    var result = await finantialApi.GetQuotations(code: dividendDTO.C, startDate: dividendDTO.ExD.AddDays(-10), endDate: dividendDTO.ExD.AddDays(-1));
+                    dividendDTO.PosD = result.Count != 0 ? result.OrderByDescending(_ => _.D).First().D : null;
+                });
+            }
 
             return data.Select(_ => _ as Distribution).ToList();
         }

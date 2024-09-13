@@ -14,7 +14,7 @@ namespace AnotherStockMarketService.Api.Services.Impl
             _serviceProvider = serviceProvider;
         }
 
-        public async Task<List<CorporateAction>> GetSplitEventsBetweenDates(DateTime startExecutionDate, DateTime endExecutionDate, string? ticker = null)
+        public async Task<List<CorporateAction>> GetSplitEventsBetweenDates(DateTime startExecutionDate, DateTime endExecutionDate, string? ticker = null, bool loadPositionDate = false)
         {
             var degreeOfParallelism = 10;
 
@@ -22,12 +22,15 @@ namespace AnotherStockMarketService.Api.Services.Impl
 
             var data = await finantialApi.GetSplits(startExecutionDate, endExecutionDate, ticker);
 
-            await Parallel.ForEachAsync(data, new ParallelOptions { MaxDegreeOfParallelism = degreeOfParallelism }, async (splitDTO, cancellationToken) =>
-            {
-                var result = await finantialApi.GetQuotations(code: splitDTO.C, startDate: splitDTO.ExD.AddDays(-10), endDate: splitDTO.ExD.AddDays(-1));
-                splitDTO.PosD = result.Count != 0 ? result.OrderByDescending(_ => _.D).First().D : DateTime.MinValue;
-            });
 
+            if (loadPositionDate)
+            {
+                await Parallel.ForEachAsync(data, new ParallelOptions { MaxDegreeOfParallelism = degreeOfParallelism }, async (splitDTO, cancellationToken) =>
+                {
+                    var result = await finantialApi.GetQuotations(code: splitDTO.C, startDate: splitDTO.ExD.AddDays(-10), endDate: splitDTO.ExD.AddDays(-1));
+                    splitDTO.PosD = result.Count != 0 ? result.OrderByDescending(_ => _.D).First().D : DateTime.MinValue;
+                });
+            }
             return data.Select(_ => _ as CorporateAction).ToList();
         }
 

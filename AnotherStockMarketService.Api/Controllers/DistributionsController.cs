@@ -11,9 +11,9 @@ namespace AnotherStockMarketService.Api.Controllers
     public class DistributionsController(IBus bus) : ControllerBase
     {
         [HttpGet]
-        public async Task<IEnumerable<Distribution>> Get([FromQuery(Name = "code")] string? code, [FromQuery(Name = "startDate")] DateTime startDate, [FromQuery(Name = "endDate")] DateTime endDate, [FromServices] IDistributionDataService distributionDataService)
+        public async Task<IEnumerable<Distribution>> Get([FromQuery(Name = "code")] string? code, [FromQuery(Name = "startDate")] DateTime startDate, [FromQuery(Name = "endDate")] DateTime endDate, [FromServices] IDistributionDataService distributionDataService, [FromQuery(Name = "loadPositionDate")] bool loadPositionDate = false)
         {
-            var data = await distributionDataService.GetCodeDistributionsBetweenDates(startDate, endDate, code);
+            var data = await distributionDataService.GetCodeDistributionsBetweenDates(startDate, endDate, code, loadPositionDate);
 
             return data;
         }
