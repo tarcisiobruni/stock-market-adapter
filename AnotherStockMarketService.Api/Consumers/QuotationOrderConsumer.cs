@@ -1,8 +1,7 @@
 ﻿using AnotherStockMarketService.Api.Models;
 using AnotherStockMarketService.Api.Services;
 using MassTransit;
-using System.Text;
-using System.Text.Json;
+using System.Diagnostics;
 
 namespace AnotherStockMarketService.Api.Consumers
 {
@@ -36,8 +35,14 @@ namespace AnotherStockMarketService.Api.Consumers
             {
                 HttpRequestMessage request = HttpRequestHelper.PrepareRequestMessage(_configuration, quotations, "Quotations");
                 var client = new HttpClient();
+                client.Timeout = TimeSpan.FromSeconds(90);
+
+                var sw = Stopwatch.StartNew();
+                sw.Start();
                 var response = await client.SendAsync(request);
-                response.EnsureSuccessStatusCode();
+                sw.Stop();
+
+                _logger.LogInformation($"Total time in seconds {sw.Elapsed.TotalSeconds}");
             }
             catch (Exception ex)
             {
