@@ -3,6 +3,9 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /app
 
+EXPOSE 8080
+ENV ASPNETCORE_URLS=http://+:8080
+
 # Copy everything
 COPY ./ ./
 
